@@ -1,0 +1,193 @@
+﻿@{
+    ViewData["Title"] = "Index";
+}
+<div class="container">
+    <h3>Add Student</h3>
+    <div id="form">
+        <div class="mb-3">
+            @*<label class="form-label">Student ID</label>*@
+            <input type="hidden" id="studentid" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Student Name</label>
+            <input type="text" class="form-control" id="studentname" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="text" class="form-control" id="email" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Shift</label>
+            <input type="text" class="form-control" id="shift" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Date Of Birth</label>
+            <input type="date" class="form-control" id="dateofbirth" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Department</label>
+            <select class="form-control" id="department"></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Picpath</label>
+            <input type="file" class="form-control" id="picpath" />
+        </div>
+       <input type="button" class="btn btn-primary"  id="save" value="Save" onclick="save();"/>
+       <input type="button" class="btn btn-success"  id="update" value="Update" onclick="update();"/>
+    </div>
+    <p></p>
+    <p></p>
+    <h2>Student Table</h2>
+    <table class="table">
+    <tr>
+        <th>Student Name</th>
+        <th>Email</th>
+        <th>Shift</th>
+        <th>Date Of Birth</th>
+        <th>Department</th>
+        <th>Picture</th>
+        <th>Action</th>
+    </tr>
+        <tbody id="liststudent">
+
+        </tbody>
+    </table>
+  </div>
+
+<script>
+    this.departmentdrop();
+    function departmentdrop() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "Home/Department", true);
+        xhr.onload = function () {
+            var list = JSON.parse(this.responseText);
+            var options = "";
+            for (var i = 0; i < list.length; i++) {
+                var option = '<option value="' + list[i].departmentId + '">' + list[i].departmentName + '</option>'
+                options += option;
+            }
+            document.getElementById('department').innerHTML = options;
+        }
+        xhr.send();
+    }
+    var student = {
+        "studentId": 0,
+        "studentName": "",
+        "email": "",
+        "departmentId": "",
+        "dob": "",
+        "shift": "",
+    }
+
+    function save() {
+        this.student.studentId = 0;
+        this.student.studentName = document.getElementById('studentname').value;
+        this.student.email = document.getElementById('email').value;
+        this.student.departmentId = document.getElementById('department').value;
+        this.student.dob = document.getElementById('dateofbirth').value;
+        this.student.shift = document.getElementById('shift').value;
+        var strjson = JSON.stringify(this.student);
+        var files = document.getElementById('picpath').files;
+        var file = files.length > 0 ? files[0] : null;
+
+        var formdata = new FormData();
+        formdata.append('picpath', file)
+        formdata.append('studentId', this.student.studentId)
+        formdata.append('studentName', this.student.studentName)
+        formdata.append('email', this.student.email)
+        formdata.append('departmentId', this.student.departmentId)
+        formdata.append('dob', this.student.dob)
+        formdata.append('shift', this.student.shift)
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "Home/Studentadd", true);
+        xhr.onload = function () {
+            alert('save successfully');
+        }
+        xhr.send(formdata);
+    }
+
+    function update() {
+        this.student.studentId = document.getElementById('studentid').value;
+        this.student.studentName = document.getElementById('studentname').value;
+        this.student.email = document.getElementById('email').value;
+        this.student.departmentId = document.getElementById('department').value;
+        this.student.dob = document.getElementById('dateofbirth').value;
+        this.student.shift = document.getElementById('shift').value;
+        var strjson = JSON.stringify(this.student);
+        var files = document.getElementById('picpath').files;
+        var file = files.length > 0 ? files[0] : null;
+
+        var formdata = new FormData();
+        formdata.append('picpath', file)
+        formdata.append('studentId', this.student.studentId)
+        formdata.append('studentName', this.student.studentName)
+        formdata.append('email', this.student.email)
+        formdata.append('departmentId', this.student.departmentId)
+        formdata.append('dob', this.student.dob)
+        formdata.append('shift', this.student.shift)
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", "Home/Studentedit", true);
+        xhr.onload = function () {
+            alert('update successfully');
+        }
+        xhr.send(formdata);
+    }
+
+    this.Getall();
+    function Getall() {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "Home/Students", true);
+        xhr.onload = function () {
+                
+            var list = JSON.parse(this.responseText);
+            for (var i = 0; i < list.length; i++) {
+                var tr = '<tr>'
+                    + '<td>' + list[i].studentName + '</td>'
+                    + '<td>' + list[i].email + '</td>'
+                    + '<td>' + list[i].shift + '</td>'
+                    + '<td>' + list[i].dob + '</td>'
+                    + '<td>' + list[i].departmentId + '</td>'
+                    + '<td><img src="/pics/' + list[i].photo + '" style="width:100px;height:100px;"></td>'
+                    + '<td><a href="#" class="btn btn-primary" onclick="edit(' + list[i].studentId + ')">Edit</a></td> '
+                    + '<td><a href="#" class="btn btn-success" onclick="deleted(' + list[i].studentId + ')">Delete</a></td> '
+                '</tr>'
+
+                tbody += tr;
+                console.log(list);
+            }
+            document.getElementById('liststudent').innerHTML = tbody;
+        }
+        xhr.send();
+    }
+
+    function edit(id) {
+        this.getbyid(id);
+    }
+
+    function getbyid(id){
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "Home/Student?=" + id, true);
+        xhr.onload = function (){
+            var list = JSON.parse(this.responseText);
+            document.getElementById('studentid').value = list.studentId;
+            document.getElementById('studentname').value = list.studentName;
+            document.getElementById('dateofbirth').value = list.dob;
+            document.getElementById('department').value = list.departmentId;
+            document.getElementById('email').value = list.email;
+            document.getElementById('shift').value = list.shift;
+            document.getElementById('picpath').value = list.photo;
+        }
+        xhr.send();
+    }
+
+    function deleted(id){
+        var xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "Home/Studentdelete?id=" + id, true);
+        xhr.onload = function () {
+            alert("delete successfully");
+        }
+        xhr.send();
+    }
+</script>
